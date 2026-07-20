@@ -21,10 +21,10 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
           
-          # Оставляем ТОЛЬКО подмену линкера ld, ассемблер не трогаем!
+          # Подменяем дефолтный линкер на классический GNU ld, чтобы ядро 4.4 собиралось корректно
           cd toolchain/bin
           rm -f ld
-          ln -s ld.lld ld
+          ln -s /usr/bin/aarch64-linux-gnu-ld ld
 
       - name: Compile Kernel
         run: |
@@ -33,8 +33,6 @@ jobs:
           export SUBARCH=arm64
 
           DEFCONFIG="lavender-perf_defconfig"
-
-          # Упаковываем вызов компилятора со всеми нужными флагами в одну переменную
           COMPILER_STRING="clang -no-integrated-as -B /usr/bin/aarch64-linux-gnu-"
 
           # Генерация .config
@@ -45,7 +43,7 @@ jobs:
                CLANG_TRIPLE=aarch64-linux-gnu- \
                CROSS_COMPILE=aarch64-linux-gnu- \
                CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-               LD=ld.lld \
+               LD=aarch64-linux-gnu-ld \
                HOSTCFLAGS="-fcommon"
                
       - name: Upload Kernel Artifact
