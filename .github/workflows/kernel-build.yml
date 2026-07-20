@@ -21,6 +21,11 @@ jobs:
         run: |
           # Используем Proton Clang как один из самых популярных и быстрых тулчейнов
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
+          
+          # Подменяем дефолтный линкер на универсальный LLD, чтобы починить сборку VDSO
+          cd toolchain/bin
+          rm -f ld
+          ln -s ld.lld ld
 
       - name: Compile Kernel
         run: |
