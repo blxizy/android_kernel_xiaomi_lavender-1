@@ -19,14 +19,12 @@ jobs:
 
       - name: Download Toolchain (Proton Clang)
         run: |
-          # Используем Proton Clang
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
           
-          # Подменяем дефолтные линкер и ассемблер на правильные кросс-компиляторные
+          # Оставляем ТОЛЬКО подмену линкера ld, ассемблер не трогаем!
           cd toolchain/bin
-          rm -f ld as
+          rm -f ld
           ln -s ld.lld ld
-          ln -s /usr/bin/aarch64-linux-gnu-as as
 
       - name: Compile Kernel
         run: |
@@ -36,12 +34,14 @@ jobs:
 
           DEFCONFIG="lavender-perf_defconfig"
 
-          # Генерация .config с отключенным встроенным ассемблером
-          make O=out ARCH=arm64 CC="clang -no-integrated-as" $DEFCONFIG
+          # Упаковываем вызов компилятора со всеми нужными флагами в одну переменную
+          COMPILER_STRING="clang -no-integrated-as -B /usr/bin/aarch64-linux-gnu-"
 
-          # Непосредственно сборка ядра
-          make -j$(nproc --all) O=out ARCH=arm64 \
-               CC="clang -no-integrated-as" \
+          # Генерация .config
+          make O=out ARCH=arm64 CC="$COMPILER_STRING" $DEFCONFIG
+
+          # Сборка ядра
+          make -j$(nproc --all) O=out ARCH=arm64 CC="$COMPILER_STRING" \
                CLANG_TRIPLE=aarch64-linux-gnu- \
                CROSS_COMPILE=aarch64-linux-gnu- \
                CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
