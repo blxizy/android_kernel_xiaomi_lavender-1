@@ -1,0 +1,49 @@
+name: Compile Kernel CI
+
+on:
+  workflow_dispatch: # Позволяет запускать сборку вручную кнопкой в интерфейсе GitHub
+
+jobs:
+  build:
+    name: Build Kernel
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
+
+      - name: Setup Build Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi libssl-dev libfl-dev curl zip unzip
+
+      - name: Download Toolchain (Proton Clang)
+        run: |
+          # Используем Proton Clang как один из самых популярных и быстрых тулчейнов
+          git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
+
+      - name: Compile Kernel
+        run: |
+          # Прописываем пути и архитектуру
+          export PATH="$GITHUB_WORKSPACE/toolchain/bin:$PATH"
+          export ARCH=arm64
+          export SUBARCH=arm64
+
+          # УКАЖИ СВОЙ DEFCONFIG (найди его в arch/arm64/configs/)
+          # На скриншоте упоминается lavender, возможно это lavender_defconfig
+          DEFCONFIG="lavender_defconfig"
+
+          # Генерация .config
+          make O=out ARCH=arm64 CC=clang $DEFCONFIG
+
+          # Непосредственно сборка ядра
+          make -j$(nproc --all) O=out ARCH=arm64 CC=clang \
+               CROSS_COMPILE=aarch64-linux-gnu- \
+               CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+
+      - name: Upload Kernel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Compiled-Kernel
+          # Путь к итоговому файлу зависит от устройства (обычно Image.gz-dtb или Image)
+          path: out/arch/arm64/boot/Image.gz-dtb
