@@ -20,11 +20,6 @@ jobs:
       - name: Download Toolchain (Proton Clang)
         run: |
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
-          
-          # Подменяем дефолтный линкер на классический GNU ld, чтобы ядро 4.4 собиралось корректно
-          cd toolchain/bin
-          rm -f ld
-          ln -s /usr/bin/aarch64-linux-gnu-ld ld
 
       - name: Compile Kernel
         run: |
@@ -40,7 +35,6 @@ jobs:
 
           # Сборка ядра
           make -j$(nproc --all) O=out ARCH=arm64 CC="$COMPILER_STRING" \
-               CLANG_TRIPLE=aarch64-linux-gnu- \
                CROSS_COMPILE=aarch64-linux-gnu- \
                CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
                LD=aarch64-linux-gnu-ld \
