@@ -1,4 +1,4 @@
-name: Compile Kernel CI
+ubuntu-latest: Compile Kernel CI
 
 on:
   workflow_dispatch: # Позволяет запускать сборку вручную кнопкой в интерфейсе GitHub
@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: Build Kernel
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     
     steps:
       - name: Checkout Kernel Source
