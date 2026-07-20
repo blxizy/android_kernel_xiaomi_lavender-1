@@ -35,10 +35,12 @@ jobs:
 
           DEFCONFIG="lavender-perf_defconfig"
 
-          make O=out ARCH=arm64 CC=clang $DEFCONFIG
+          # Генерация .config с отключенным встроенным ассемблером
+          make O=out ARCH=arm64 CC="clang -no-integrated-as" $DEFCONFIG
 
-          # Добавлены HOSTCFLAGS и LD
-          make -j$(nproc --all) O=out ARCH=arm64 CC=clang \
+          # Непосредственно сборка ядра
+          make -j$(nproc --all) O=out ARCH=arm64 \
+               CC="clang -no-integrated-as" \
                CLANG_TRIPLE=aarch64-linux-gnu- \
                CROSS_COMPILE=aarch64-linux-gnu- \
                CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
