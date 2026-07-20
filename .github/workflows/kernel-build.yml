@@ -24,23 +24,21 @@ jobs:
 
       - name: Compile Kernel
         run: |
-          # Прописываем пути и архитектуру
           export PATH="$GITHUB_WORKSPACE/toolchain/bin:$PATH"
           export ARCH=arm64
           export SUBARCH=arm64
 
-          # УКАЖИ СВОЙ DEFCONFIG (найди его в arch/arm64/configs/)
-          # На скриншоте упоминается lavender, возможно это lavender_defconfig
           DEFCONFIG="lavender-perf_defconfig"
 
-          # Генерация .config
           make O=out ARCH=arm64 CC=clang $DEFCONFIG
 
-          # Непосредственно сборка ядра
+          # Добавлены HOSTCFLAGS и LD
           make -j$(nproc --all) O=out ARCH=arm64 CC=clang \
                CROSS_COMPILE=aarch64-linux-gnu- \
-               CROSS_COMPILE_ARM32=arm-linux-gnueabi-
-
+               CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+               LD=aarch64-linux-gnu-ld \
+               HOSTCFLAGS="-fcommon"
+               
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
