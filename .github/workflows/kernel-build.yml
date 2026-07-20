@@ -31,7 +31,7 @@ jobs:
 
           # УКАЖИ СВОЙ DEFCONFIG (найди его в arch/arm64/configs/)
           # На скриншоте упоминается lavender, возможно это lavender_defconfig
-          DEFCONFIG="lavender_defconfig"
+          DEFCONFIG="lavender-perf_defconfig"
 
           # Генерация .config
           make O=out ARCH=arm64 CC=clang $DEFCONFIG
