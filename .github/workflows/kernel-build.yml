@@ -1,4 +1,4 @@
-ubuntu-latest: Compile Kernel CI
+name: Compile Kernel CI
 
 on:
   workflow_dispatch: # Позволяет запускать сборку вручную кнопкой в интерфейсе GitHub
