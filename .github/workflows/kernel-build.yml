@@ -31,37 +31,38 @@ jobs:
           sed -i 's/obj-$(CONFIG_KSU)/obj-y/' drivers/kernelsu/Makefile
           
           echo "Бронебойные фиксы для старого ядра 4.4..."
+          
           # 1. Решаем проблемы с путями и удаляем несуществующие заголовки
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/compiler_types\.h/linux\/compiler\.h/g' {} +
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/pgtable\.h/asm\/pgtable\.h/g' {} +
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i '/linux\/sched\/task_stack\.h/d' {} +
           
-          # 2. Создаем файл-прослойку (Compat Header) со всеми недостающими кусками кода
+          # 2. Вырезаем несовместимый lsm_hook.c (в ядре 4.4 нет современных хуков LSM)
+          echo "void ksu_lsm_hook_init(void) {}" > drivers/kernelsu/hook/lsm_hook.c
+          
+          # 3. Создаем файл-прослойку (Compat Header)
           cat << 'EOF' > drivers/kernelsu/ksu_44_compat.h
-          #ifndef KSU_44_COMPAT_DEFS
-          #define KSU_44_COMPAT_DEFS
+          #ifndef KSU_44_COMPAT_H
+          #define KSU_44_COMPAT_H
           #include <linux/init.h>
           #include <linux/sched.h>
           #include <linux/syscalls.h>
           #include <linux/ptrace.h>
           #include <linux/linkage.h>
+          #include <linux/uaccess.h>
           
-          /* Даем компилятору правильное определение типа syscall_fn_t */
+          /* Хитрый трюк: отключаем fallback KernelSU (чтобы он не переопределял тип как void*) */
+          #define syscall_fn_t syscall_fn_t
           typedef asmlinkage long (*syscall_fn_t)(struct pt_regs *regs);
           
-          /* Возвращаем старые названия функций ядра 4.4 */
+          /* Переводим новые функции на старые аналоги ядра 4.4 */
           #define strncpy_from_user_nofault strncpy_from_user
           #define ksys_close sys_close
           #endif
           EOF
           
-          # 3. Физически внедряем наш заголовок в самое начало каждого файла KSU
-          find drivers/kernelsu/ -type f -name "*.[ch]" \! -name "ksu_44_compat.h" -exec sh -c '
-            for file do
-              cat drivers/kernelsu/ksu_44_compat.h "$file" > "$file.tmp"
-              mv "$file.tmp" "$file"
-            done
-          ' sh {} +
+          # 4. Принудительно подключаем compat header ко всем файлам через Makefile
+          echo "ccflags-y += -include \$(srctree)/drivers/kernelsu/ksu_44_compat.h" >> drivers/kernelsu/Makefile
           
           echo "Добавляем обязательные флаги для работы KPROBES..."
           cat <<EOF >> arch/arm64/configs/lavender-perf_defconfig
