@@ -21,6 +21,18 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
 
+      - name: Setup KernelSU Next
+        run: |
+          echo "Скачиваем и интегрируем KernelSU Next..."
+          curl -lsfas https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh | bash -
+
+          echo "Включаем KSU и нужные зависимости в defconfig..."
+          # Добавляем флаги прямо в конец твоего конфига
+          echo "CONFIG_KPROBES=y" >> arch/arm64/configs/lavender-perf_defconfig
+          echo "CONFIG_HAVE_KPROBES=y" >> arch/arm64/configs/lavender-perf_defconfig
+          echo "CONFIG_KPROBE_EVENTS=y" >> arch/arm64/configs/lavender-perf_defconfig
+          echo "CONFIG_KSU=y" >> arch/arm64/configs/lavender-perf_defconfig
+
       - name: Compile Kernel
         run: |
           export PATH="$GITHUB_WORKSPACE/toolchain/bin:$PATH"
