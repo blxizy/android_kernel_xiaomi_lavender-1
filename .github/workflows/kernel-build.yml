@@ -28,7 +28,7 @@ jobs:
           export SUBARCH=arm64
 
           DEFCONFIG="lavender-perf_defconfig"
-          COMPILER_STRING="clang -no-integrated-as -B /usr/bin/aarch64-linux-gnu-"
+          COMPILER_STRING="clang -no-integrated-as -B /usr/bin/aarch64-linux-gnu- -fno-builtin-stpcpy"
 
           # Генерация .config
           make O=out ARCH=arm64 CC="$COMPILER_STRING" $DEFCONFIG
