@@ -27,14 +27,13 @@ jobs:
           curl -lsfas https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh | bash -
           
           echo "Принудительно интегрируем KSU в систему сборки..."
-          # Жестко заставляем ядро собирать папку kernelsu
           echo "obj-y += kernelsu/" >> drivers/Makefile
-          
-          # Ломаем проверку внутри самого KSU, чтобы он собирался всегда
           sed -i 's/obj-$(CONFIG_KSU)/obj-y/' drivers/kernelsu/Makefile
           
+          echo "Фикс для старого ядра 4.4 (отсутствующий тип syscall_fn_t)..."
+          echo 'ccflags-y += -Dsyscall_fn_t="void *"' >> drivers/kernelsu/Makefile
+          
           echo "Добавляем обязательные флаги для работы KPROBES..."
-          # Для старых ядер 4.4 Kprobes не работают без включенных модулей и KALLSYMS
           cat <<EOF >> arch/arm64/configs/lavender-perf_defconfig
           CONFIG_KPROBES=y
           CONFIG_HAVE_KPROBES=y
