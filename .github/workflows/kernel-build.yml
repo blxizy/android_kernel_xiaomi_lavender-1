@@ -30,8 +30,10 @@ jobs:
           echo "obj-y += kernelsu/" >> drivers/Makefile
           sed -i 's/obj-$(CONFIG_KSU)/obj-y/' drivers/kernelsu/Makefile
           
-          echo "Бронебойный фикс для старого ядра 4.4 (заменяем текст в коде)..."
+          echo "Бронебойные фиксы для старого ядра 4.4 (заменяем текст в коде)..."
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/syscall_fn_t/void \*/g' {} +
+          # Новый фикс: заменяем несуществующий заголовочный файл на правильный
+          find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/compiler_types\.h/linux\/compiler\.h/g' {} +
           
           echo "Добавляем обязательные флаги для работы KPROBES..."
           cat <<EOF >> arch/arm64/configs/lavender-perf_defconfig
