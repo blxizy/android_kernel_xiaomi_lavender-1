@@ -23,8 +23,11 @@ jobs:
 
       - name: Setup KernelSU Next
         run: |
-          echo "Скачиваем KernelSU Next (Legacy branch для ручной интеграции)..."
+          echo "Скачиваем KernelSU Next..."
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
+          
+          echo "Фикс ошибки ERR_PTR для старых ядер..."
+          sed -i '1s/^/#include <linux\/err.h>\n/' drivers/kernelsu/hook/setuid_hook.c
           
           echo "Включаем KernelSU в конфигурации ядра..."
           echo "CONFIG_KSU=y" >> arch/arm64/configs/lavender-perf_defconfig
