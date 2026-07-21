@@ -23,8 +23,8 @@ jobs:
 
       - name: Setup KernelSU Next
         run: |
-          echo "Скачиваем KernelSU Next..."
-          curl -lsfas https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh | bash -
+          echo "Скачиваем KernelSU Next (Legacy branch для ручной интеграции)..."
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
           
           echo "Включаем KernelSU в конфигурации ядра..."
           echo "CONFIG_KSU=y" >> arch/arm64/configs/lavender-perf_defconfig
