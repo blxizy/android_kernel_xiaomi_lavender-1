@@ -34,11 +34,14 @@ jobs:
           # 1. Фикс недостающего типа syscall_fn_t
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/syscall_fn_t/void \*/g' {} +
           
-          # 2. Фикс compiler_types.h -> compiler.h (ТОТ САМЫЙ, КОТОРЫЙ СЕЙЧАС ПРОПУЩЕН)
+          # 2. Фикс compiler_types.h -> compiler.h
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/compiler_types\.h/linux\/compiler\.h/g' {} +
           
-          # 3. Фикс макросов __init и __exit
+          # 3. Фикс макросов __init и __exit (принудительно добавляем init.h)
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i '1i #include <linux/init.h>' {} +
+          
+          # 4. Фикс путей к таблицам страниц (linux/pgtable.h -> asm/pgtable.h)
+          find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/pgtable\.h/asm\/pgtable\.h/g' {} +
           
           echo "Добавляем обязательные флаги для работы KPROBES..."
           cat <<EOF >> arch/arm64/configs/lavender-perf_defconfig
