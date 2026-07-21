@@ -31,6 +31,7 @@ jobs:
           sed -i 's/in_compat_syscall()/is_compat_task()/g' drivers/kernelsu/sulog/event.c
           sed -i '1s/^/#include <linux\/compat.h>\n/' drivers/kernelsu/sulog/event.c
           sed -i '1i #ifndef ALIGN_DOWN\n#define ALIGN_DOWN(x, a) ((x) & ~((typeof(x))(a) - 1))\n#endif\n' drivers/kernelsu/feature/adb_root.c
+          sed -i '1i #ifndef __nocfi\n#define __nocfi\n#endif\n' drivers/kernelsu/feature/selinux_hide.c
           
           echo "Включаем KernelSU в конфигурации ядра..."
           echo "CONFIG_KSU=y" >> arch/arm64/configs/lavender-perf_defconfig
