@@ -34,7 +34,10 @@ jobs:
           # 1. Фикс недостающего типа syscall_fn_t
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/syscall_fn_t/void \*/g' {} +
           
-          # 2. Фикс макросов __init и __exit (принудительно добавляем init.h в первую строку каждого файла)
+          # 2. Фикс compiler_types.h -> compiler.h (тот самый, который мы потеряли!)
+          find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/compiler_types\.h/linux\/compiler\.h/g' {} +
+          
+          # 3. Фикс макросов __init и __exit
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i '1i #include <linux/init.h>' {} +
           
           echo "Добавляем обязательные флаги для работы KPROBES..."
