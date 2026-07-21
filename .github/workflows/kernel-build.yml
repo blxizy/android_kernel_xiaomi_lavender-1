@@ -21,7 +21,7 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
 
-      - name: Setup KernelSU Next
+    - name: Setup KernelSU Next
         run: |
           echo "Скачиваем KernelSU Next..."
           curl -lsfas https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh | bash -
@@ -51,9 +51,9 @@ jobs:
           #include <linux/linkage.h>
           #include <linux/uaccess.h>
           
-          /* Хитрый трюк: отключаем fallback KernelSU (чтобы он не переопределял тип как void*) */
-          #define syscall_fn_t syscall_fn_t
-          typedef asmlinkage long (*syscall_fn_t)(struct pt_regs *regs);
+          /* Блокируем кривой fallback KSU и даем правильный тип указателя на функцию */
+          typedef asmlinkage long (*ksu_real_syscall_fn_t)(struct pt_regs *regs);
+          #define syscall_fn_t ksu_real_syscall_fn_t
           
           /* Переводим новые функции на старые аналоги ядра 4.4 */
           #define strncpy_from_user_nofault strncpy_from_user
