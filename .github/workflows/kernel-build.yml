@@ -21,7 +21,7 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
 
-    - name: Setup KernelSU Next
+      - name: Setup KernelSU Next
         run: |
           echo "Скачиваем KernelSU Next..."
           curl -lsfas https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh | bash -
