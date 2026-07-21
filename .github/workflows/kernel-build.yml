@@ -43,6 +43,9 @@ jobs:
           # 4. Фикс путей к таблицам страниц (linux/pgtable.h -> asm/pgtable.h)
           find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/pgtable\.h/asm\/pgtable\.h/g' {} +
           
+          # 5. Фикс для task_stack.h (удаляем инклуд, так как в 4.4 все нужное есть в sched.h)
+          find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i '/linux\/sched\/task_stack\.h/d' {} +
+          
           echo "Добавляем обязательные флаги для работы KPROBES..."
           cat <<EOF >> arch/arm64/configs/lavender-perf_defconfig
           CONFIG_KPROBES=y
