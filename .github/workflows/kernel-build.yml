@@ -30,8 +30,8 @@ jobs:
           echo "obj-y += kernelsu/" >> drivers/Makefile
           sed -i 's/obj-$(CONFIG_KSU)/obj-y/' drivers/kernelsu/Makefile
           
-          echo "Фикс для старого ядра 4.4 (отсутствующий тип syscall_fn_t)..."
-          echo 'ccflags-y += -Dsyscall_fn_t="void *"' >> drivers/kernelsu/Makefile
+          echo "Бронебойный фикс для старого ядра 4.4 (заменяем текст в коде)..."
+          find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/syscall_fn_t/void \*/g' {} +
           
           echo "Добавляем обязательные флаги для работы KPROBES..."
           cat <<EOF >> arch/arm64/configs/lavender-perf_defconfig
