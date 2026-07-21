@@ -40,9 +40,28 @@ jobs:
                LD=aarch64-linux-gnu-ld \
                HOSTCFLAGS="-fcommon"
                
+      # ... (здесь твой шаг Compile Kernel) ...
+
+      - name: Package Kernel with AnyKernel3
+        run: |
+          # Скачиваем официальный AnyKernel3
+          git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git AK3
+          
+          # Копируем собранное ядро
+          cp out/arch/arm64/boot/Image.gz-dtb AK3/
+          
+          cd AK3
+          # Автоматически редактируем anykernel.sh под твое устройство (lavender)
+          sed -i 's/device.name1=maguro/device.name1=lavender/' anykernel.sh
+          sed -i 's/block=\/dev\/block\/platform\/omap\/omap_hsmmc.0\/by-name\/boot/block=auto/' anykernel.sh
+          sed -i 's/is_slot_device=0;/is_slot_device=auto;/' anykernel.sh
+          
+          # Удаляем лишнее и пакуем в ZIP
+          rm -rf .git README.md
+          zip -r9 ../Lavender-Custom-Kernel.zip *
+
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Compiled-Kernel
-          # Путь к итоговому файлу зависит от устройства (обычно Image.gz-dtb или Image)
-          path: out/arch/arm64/boot/Image.gz-dtb
+          name: Lavender-Flashable-Kernel
+          path: Lavender-Custom-Kernel.zip
