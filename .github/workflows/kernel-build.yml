@@ -26,53 +26,8 @@ jobs:
           echo "Скачиваем KernelSU Next..."
           curl -lsfas https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh | bash -
           
-          echo "Принудительно интегрируем KSU в систему сборки..."
-          echo "obj-y += kernelsu/" >> drivers/Makefile
-          sed -i 's/obj-$(CONFIG_KSU)/obj-y/' drivers/kernelsu/Makefile
-          
-          echo "Бронебойные фиксы для старого ядра 4.4..."
-          
-          # 1. Решаем проблемы с путями и удаляем несуществующие заголовки
-          find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/compiler_types\.h/linux\/compiler\.h/g' {} +
-          find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i 's/linux\/pgtable\.h/asm\/pgtable\.h/g' {} +
-          find drivers/kernelsu/ -type f -name "*.[ch]" -exec sed -i '/linux\/sched\/task_stack\.h/d' {} +
-          
-          # 2. Вырезаем несовместимый lsm_hook.c (в ядре 4.4 нет современных хуков LSM)
-          echo "void ksu_lsm_hook_init(void) {}" > drivers/kernelsu/hook/lsm_hook.c
-          
-          # 3. Создаем файл-прослойку (Compat Header)
-          cat << 'EOF' > drivers/kernelsu/ksu_44_compat.h
-          #ifndef KSU_44_COMPAT_H
-          #define KSU_44_COMPAT_H
-          #include <linux/init.h>
-          #include <linux/sched.h>
-          #include <linux/syscalls.h>
-          #include <linux/ptrace.h>
-          #include <linux/linkage.h>
-          #include <linux/uaccess.h>
-          
-          /* Блокируем кривой fallback KSU и даем правильный тип указателя на функцию */
-          typedef asmlinkage long (*ksu_real_syscall_fn_t)(struct pt_regs *regs);
-          #define syscall_fn_t ksu_real_syscall_fn_t
-          
-          /* Переводим новые функции на старые аналоги ядра 4.4 */
-          #define strncpy_from_user_nofault strncpy_from_user
-          #define ksys_close sys_close
-          #endif
-          EOF
-          
-          # 4. Принудительно подключаем compat header ко всем файлам через Makefile
-          echo "ccflags-y += -include \$(srctree)/drivers/kernelsu/ksu_44_compat.h" >> drivers/kernelsu/Makefile
-          
-          echo "Добавляем обязательные флаги для работы KPROBES..."
-          cat <<EOF >> arch/arm64/configs/lavender-perf_defconfig
-          CONFIG_KPROBES=y
-          CONFIG_HAVE_KPROBES=y
-          CONFIG_KPROBE_EVENTS=y
-          CONFIG_KALLSYMS=y
-          CONFIG_KALLSYMS_ALL=y
-          CONFIG_MODULES=y
-          EOF
+          echo "Включаем KernelSU в конфигурации ядра..."
+          echo "CONFIG_KSU=y" >> arch/arm64/configs/lavender-perf_defconfig
       
       - name: Compile Kernel
         run: |
